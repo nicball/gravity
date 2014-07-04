@@ -33,6 +33,7 @@ object world[] = {
     { "saturn", { 0.0, 1.353572956E12, 0.0 }, { 9.69E3, 0.0, 0.0 }, 5.6846E26, 5.8232E7, { 0.8f, 0.6f, 0.0f } },
     { "uranus", { 0.0, 2.748938461E12, 0.0 }, { 6.81E3, 0.0, 0.0, }, 8.6810E25, 2.5362E7, { 0.4f, 0.8f, 1.0f } },
     { "neptune", { 0.0, 4.452940833E12, 0.0 }, { 5.43E3, 0.0, 0.0 }, 1.0243E26, 2.4622E7, { 0.2f, 0.6f, 1.0f } },
+
     { "VY Canis Majoris", { -5E12, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, 1.989E30 * 17, 6.96342E8 * 1420, { 1.0f, 0.0f, 0.0f } }
 };
 
@@ -98,8 +99,8 @@ void render() {
 //        glBegin(GL_TRIANGLE_FAN);
         glBegin(GL_POINTS);
         glColor3fv(o->color);
-//        draw_circle(o->position.x * view_factor / 8e11,
-//                    o->position.y * view_factor / 8e11,
+//        draw_circle(o->position.x * view_factor / 8e11 + view_x,
+//                    o->position.y * view_factor / 8e11 + view_y,
 //                    o->radius * view_factor / 8e11);
         glVertex2d(o->position.x * view_factor / 8e11 + view_x,
                    o->position.y * view_factor / 8e11 + view_y);
@@ -122,7 +123,7 @@ void on_mouse(int button, int state, int x, int y) {
     }
 }
 
-void on_keyboard(unsigned char key, int x, int y) {
+void on_specialkey(int key, int x, int y) {
     switch (key) {
         case GLUT_KEY_LEFT:
             view_x += 0.1;
@@ -154,7 +155,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("");
     glutDisplayFunc(render);
     glutMouseFunc(on_mouse);
-    glutKeyboardFunc(on_keyboard);
+    glutSpecialFunc(on_specialkey);
     glutIdleFunc(render);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glutMainLoop();
