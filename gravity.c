@@ -38,8 +38,8 @@ const int NOBJ = sizeof world / sizeof world[0];
 vector accel(object* forced, object* exert) {
     vector dir = vec_sub(exert->position, forced->position);
     double L = vec_len(dir);
-    double F = G * exert->mass / ( L * L );
-    return vec_with_len(dir, F);
+    double a = G * exert->mass / ( L * L );
+    return vec_with_len(dir, a);
 }
 
 object update(object obj, vector a) {
