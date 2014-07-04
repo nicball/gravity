@@ -73,7 +73,6 @@ void step(object world[], int NOBJ) {
                     a = vec_add(a, accel(obj, i));
                 }
             }
-
             *p++ = update(*obj, a);
         }
         memcpy(world, new_world, sizeof world[0] * NOBJ);
