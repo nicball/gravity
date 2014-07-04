@@ -78,8 +78,8 @@ void step(object world[]) {
 
 void draw_circle(double x, double y, double radius) {
     glVertex2d(x, y);
-    for (int i = 0; i < 1000; i++) {
-        double angle = i * 2 * 3.1415926 / 1000;
+    for (int i = 0; i <= 100; i++) {
+        double angle = i * 2 * 3.1415926 / 100;
         glVertex2d(x + radius * cos(angle), y + radius * sin(angle));
     }
 }
