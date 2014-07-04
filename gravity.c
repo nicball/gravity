@@ -97,6 +97,8 @@ void render() {
         draw_circle(o->position.x * view_factor / 8e11,
                     o->position.y * view_factor / 8e11,
                     o->radius * view_factor / 8e11);
+//        glVertex2d(o->position.x * view_factor / 8e11,
+//                   o->position.y * view_factor / 8e11);
         glEnd();
         glFlush();
     }
