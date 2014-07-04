@@ -60,7 +60,7 @@ void print(object* o) {
             vec_len(o->velocity), o->velocity.x, o->velocity.y, o->velocity.z);
 }
 
-void step(object world[]) {
+void step(object world[], int NOBJ) {
         object new_world[NOBJ];
         object* p = new_world;
         for (object* obj = world; obj - world != NOBJ; obj++) {
@@ -86,7 +86,7 @@ void draw_circle(double x, double y, double radius) {
 
 void render() {
     for (int i = 0; i < CHECK_POINT; i++)
-        step(world);
+        step(world, NOBJ);
 //    for (object* o = world; o - world != NOBJ; o++)
 //        print(*o);
 
