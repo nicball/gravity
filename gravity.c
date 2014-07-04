@@ -8,6 +8,8 @@ const double G = 6.6732E-11;
 const double ACCURACY = 1;
 const int CHECK_POINT = 60 * 60;
 double view_factor = 1.0;
+double view_x = 0.0;
+double view_y = 0.0;
 
 typedef struct object object;
 
@@ -31,6 +33,7 @@ object world[] = {
     { "saturn", { 0.0, 1.353572956E12, 0.0 }, { 9.69E3, 0.0, 0.0 }, 5.6846E26, 5.8232E7, { 0.8f, 0.6f, 0.0f } },
     { "uranus", { 0.0, 2.748938461E12, 0.0 }, { 6.81E3, 0.0, 0.0, }, 8.6810E25, 2.5362E7, { 0.4f, 0.8f, 1.0f } },
     { "neptune", { 0.0, 4.452940833E12, 0.0 }, { 5.43E3, 0.0, 0.0 }, 1.0243E26, 2.4622E7, { 0.2f, 0.6f, 1.0f } },
+    { "VY Canis Majoris", { -5E12, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, 1.989E30 * 17, 6.96342E8 * 1420, { 1.0f, 0.0f, 0.0f } }
 };
 
 const int NOBJ = sizeof world / sizeof world[0];
@@ -88,17 +91,18 @@ void render() {
     for (int i = 0; i < CHECK_POINT; i++)
         step(world, NOBJ);
 //    for (object* o = world; o - world != NOBJ; o++)
-//        print(*o);
+//        print(o);
 
     glClear(GL_COLOR_BUFFER_BIT);
     for (object* o = world; o - world != NOBJ; o++) {
-        glBegin(GL_TRIANGLE_FAN);
+//        glBegin(GL_TRIANGLE_FAN);
+        glBegin(GL_POINTS);
         glColor3fv(o->color);
-        draw_circle(o->position.x * view_factor / 8e11,
-                    o->position.y * view_factor / 8e11,
-                    o->radius * view_factor / 8e11);
-//        glVertex2d(o->position.x * view_factor / 8e11,
-//                   o->position.y * view_factor / 8e11);
+//        draw_circle(o->position.x * view_factor / 8e11,
+//                    o->position.y * view_factor / 8e11,
+//                    o->radius * view_factor / 8e11);
+        glVertex2d(o->position.x * view_factor / 8e11 + view_x,
+                   o->position.y * view_factor / 8e11 + view_y);
         glEnd();
         glFlush();
     }
@@ -106,10 +110,40 @@ void render() {
 }
 
 void on_mouse(int button, int state, int x, int y) {
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
         view_factor *= 2.0;
-    else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
+        view_x *= 2.0;
+        view_y *= 2.0;
+    }
+    else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
         view_factor /= 2.0;
+        view_x /= 2.0;
+        view_y /= 2.0;
+    }
+}
+
+void on_keyboard(unsigned char key, int x, int y) {
+    switch (key) {
+        case GLUT_KEY_LEFT:
+            view_x += 0.1;
+            break;
+
+        case GLUT_KEY_RIGHT:
+            view_x -= 0.1;
+            break;
+
+        case GLUT_KEY_UP:
+            view_y -= 0.1;
+            break;
+
+        case GLUT_KEY_DOWN:
+            view_y += 0.1;
+            break;
+
+        default:
+            puts("Unknown key press.");
+            break;
+    }
 }
 
 int main(int argc, char** argv) {
@@ -120,6 +154,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("");
     glutDisplayFunc(render);
     glutMouseFunc(on_mouse);
+    glutKeyboardFunc(on_keyboard);
     glutIdleFunc(render);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glutMainLoop();
