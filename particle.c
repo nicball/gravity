@@ -11,7 +11,7 @@ struct particle {
     struct vector p, v, a;
 };
 
-struct particle fluid[N];
+struct particle fluid[N] = {{0}};
 
 void interact() {
     for (struct particle* i = fluid; i != &fluid[N]; i++) {
@@ -26,7 +26,7 @@ void interact() {
                     vec_set_len(vec_sub(&i->a, &v), a);
                 }
                 else if (d >= D) {
-                    i->a = *vec_set_len(&v, d);
+                    i->a = *vec_set_len(&v, a);
                 }
             }
         }
@@ -53,10 +53,9 @@ void step() {
 
 void init() {
     for (int i = 0; i != N; i++) {
+        vec_clear(&fluid[i].p);
+        vec_clear(&fluid[i].v);
+        vec_clear(&fluid[i].a);
         fluid[i].p.x = i * 1.0 / N;
-        fluid[i].p.y = fluid[i].p.z
-            = fluid[i].v.x = fluid[i].v.y = fluid[i].v.z
-            = fluid[i].a.x = fluid[i].a.y = fluid[i].a.z
-            = 0;
     }
 }
