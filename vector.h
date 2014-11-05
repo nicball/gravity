@@ -38,7 +38,7 @@ static inline struct vector* vec_sdiv(struct vector* v, double s) {
 }
 
 static inline double vec_len(struct vector* v) {
-    return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    return sqrt(v->x * v->x + v->y * v->y + v->z * v->z);
 }
 
 static inline struct vector* vec_normalize(struct vector* v) {
