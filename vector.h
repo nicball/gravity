@@ -3,7 +3,7 @@
 
 #include <math.h>
 
-struct struct vector* {
+struct vector {
     double x;
     double y;
     double z;
