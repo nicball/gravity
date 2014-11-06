@@ -39,7 +39,7 @@ void update() {
         vec_smul(&s, T);
         struct vector s2 = i->a;
         vec_add(&s, vec_smul(&s2, T * T * 0.5));
-        struct dv = i->a;
+        struct vector dv = i->a;
         vec_smul(&dv, T);
         vec_add(&i->p, &s);
         vec_add(&i->v, &dv);
