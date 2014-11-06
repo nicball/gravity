@@ -56,6 +56,7 @@ void init() {
         vec_clear(&fluid[i].p);
         vec_clear(&fluid[i].v);
         vec_clear(&fluid[i].a);
-        fluid[i].p.x = i * 1.0 / N;
+        fluid[i].p.x = i % 200;
+        fluid[i].p.y = i / 200;
     }
 }
