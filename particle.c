@@ -4,7 +4,8 @@ enum {
     N = 1000
 };
 
-const double D = 0.5 / N;
+const double D = 1;
+const double Dm = 10 * D;
 const double T = 0.001;
 
 struct particle {
@@ -17,16 +18,15 @@ void interact() {
     for (struct particle* i = fluid; i != &fluid[N]; i++) {
         for (struct particle* j = fluid; j != &fluid[N]; j++) {
             if (i != j) {
-                struct vector v = j->p;
-                vec_sub(&v, &i->p);
-                double d = vec_len(&v);
+                i->a = j->p;
+                vec_sub(&i->a, &i->p);
+                double d = vec_len(&i->a);
                 double a = 1.0 / (d * d);
                 if (d < D) {
-                    vec_clear(&i->a);
-                    vec_set_len(vec_sub(&i->a, &v), a);
+                    vec_set_len(&i->a, -a);
                 }
-                else if (d >= D) {
-                    i->a = *vec_set_len(&v, a);
+                else if (d >= D && d < Dm) {
+                    vec_set_len(&i->a, a);
                 }
             }
         }
