@@ -28,6 +28,9 @@ void interact() {
                 else if (d >= D && d < Dm) {
                     vec_set_len(&i->a, a);
                 }
+                else {
+                    vec_clear(&i->a);
+                }
             }
         }
     }
