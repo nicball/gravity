@@ -4,25 +4,31 @@
 #include "vector.h"
 
 #define sq(x) ((x)*(x))
+#define qq(x) ((x)*(x)*(x)*(x))
+#define hq(x) ((x)*(x)*(x)*(x)*(x)*(x))
 #define every(i) for (struct particle* i = fluid; i != &fluid[N]; i++)
 
 enum {
-    N = 100,
+    N = 1000,
     CHECK_POINT = 100
 };
 
-const double K = 1.0e-10;
+const double K = 0.2;
+const double ETA = 0.5;
 const double D = 1;
-const double Dm = 2 * D;
-const double T = 0.01;
+const double Dm = 100 * D;
+const double T = 0.05;
 const struct vector G = {0, -10, 0};
+
+double view_factor = 1.0 / 600.0;
 
 struct particle {
     struct vector p, v, a;
 };
 
 struct plane {
-    double A, B, C, D;
+    struct vector n;
+    double C;
 };
 
 struct particle fluid[N];
@@ -53,12 +59,11 @@ void interact() {
                 struct vector a = j->p;
                 vec_sub(&a, &i->p);
                 double d = vec_len(&a);
-                double l = K / sq(d);
                 if (d < D) {
-                    vec_set_len(&a, -l);
+                    vec_set_len(&a, -K / d);
                 }
                 else if (d >= D && d < Dm) {
-                    vec_set_len(&a, l);
+                    vec_set_len(&a, K / hq(d));
                 }
                 else {
                     vec_clear(&a);
@@ -76,20 +81,23 @@ void gravity() {
 
 void container(struct plane* p) {
     every (i) {
-        double lam = (p->A * i->p.x + p->B * i->p.y + p->C * i->p.z + p->D)
-            / (sq(p->A) + sq(p->B) + sq(p->C));
-        struct vector norm = {p->A, p->B, p->C};
+        double lam = (vec_dot(&p->n, &i->p) + p->C) / vec_dot(&p->n, &p->n);
+        struct vector norm = p->n;
         vec_smul(&norm, lam);
         double d = vec_len(&norm);
-        if (d < D) {
-            vec_set_len(&norm, 1 / d);
+        if (d < 50 * D) {
+            vec_set_len(&norm, 5 * (50 * D - d));
+            //printf("plane=%lfx+%lfy+%lfz+%lf=0\n", p->n.x, p->n.y, p->n.z, p->C);
+            //printf("a=(%lf, %lf, %lf) %lf\n", norm.x, norm.y, norm.z, vec_len(&norm));
+            if (vec_dot(&norm, &i->v) / (vec_len(&norm) * vec_len(&i->v)) > 0)
+                vec_smul(&norm, ETA);
             vec_add(&i->a, &norm);
         }
     }
 }
 
 void update() {
-    for (struct particle* i = fluid; i != &fluid[N]; i++) {
+    every (i) {
         struct vector s = i->v;
         vec_smul(&s, T);
         struct vector s2 = i->a;
@@ -105,7 +113,7 @@ void step() {
     clear();
     interact();
     gravity();
-    container(&(struct plane){0, 1, 0, 10});
+    container(&(struct plane){{0, 1, 0}, 400});
     update();
 }
 
@@ -114,8 +122,11 @@ void init() {
         vec_clear(&fluid[i].p);
         vec_clear(&fluid[i].v);
         vec_clear(&fluid[i].a);
-        fluid[i].p.x = i % 10 * 0.1;
-        fluid[i].p.y = i / 10 * 0.1;
+        //fluid[i].p.x = i % 10 * 1.02;
+        //fluid[i].p.y = i / 100 * 1.02 + 100;
+        //fluid[i].p.z = i % 100 / 10 * 1.02;
+        fluid[i].p.x = i % 30 * 1.2;
+        fluid[i].p.y = i / 30 * 1.2 + 100;
     }
     printstats();
 }
@@ -127,13 +138,25 @@ void render() {
 
     glClear(GL_COLOR_BUFFER_BIT);
     glColor3f(0, 0, 0.7);
-    every (i) {
-        glBegin(GL_POINTS);
-        glVertex3d(i->p.x/200, i->p.y/200, i->p.z/200);
-        glEnd();
-        glFlush();
-    }
+    glBegin(GL_POINTS);
+    every (i)
+        glVertex3d(i->p.x * view_factor, i->p.y * view_factor, i->p.z * view_factor);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex3d(-1, -400 * view_factor, 0);
+    glVertex3d(1, -400 * view_factor, 0);
+    glEnd();
+    glFlush();
     glutSwapBuffers();
+}
+
+void on_mouse(int button, int state, int x, int y) {
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        view_factor *= 2.0;
+    }
+    else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+        view_factor /= 2.0;
+    }
 }
 
 int main(int argc, char** argv) {
@@ -145,6 +168,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("");
     glutDisplayFunc(render);
     glutIdleFunc(render);
+    glutMouseFunc(on_mouse);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glutMainLoop();
     return 0;
