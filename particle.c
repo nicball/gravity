@@ -1,8 +1,12 @@
 #include <GL/gl.h>
 #include <GL/glut.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
 #include "vector.h"
 
+#define rs() (rand() % 2 ? 1 : -1)
 #define sq(x) ((x)*(x))
 #define qq(x) ((x)*(x)*(x)*(x))
 #define hq(x) ((x)*(x)*(x)*(x)*(x)*(x))
@@ -10,17 +14,18 @@
 
 enum {
     N = 1000,
-    CHECK_POINT = 100
 };
 
+const double PI = 3.1415927;
 const double K = 0.2;
 const double ETA = 0.5;
+const double MU = 0.25 * PI;
 const double D = 1;
 const double Dm = 100 * D;
 const double T = 0.05;
 const struct vector G = {0, -10, 0};
 
-double view_factor = 1.0 / 600.0;
+double view_factor = 1.0 / 1600.0;
 
 struct particle {
     struct vector p, v, a;
@@ -33,15 +38,19 @@ struct plane {
 
 struct particle fluid[N];
 
+double frand() {
+    return rand() * 0.1 / RAND_MAX;
+}
+
 void printstats() {
 #ifdef VERBOSE
-    printf("%dth particle: position=(%lf,%lf,%lf) velocity=(%lf,%lf,%lf)\n",
+    printf("%dth particle: position=(%lg,%lg,%lg) velocity=(%lg,%lg,%lg)\n",
             1, fluid[1].p.x, fluid[1].p.y, fluid[1].p.z, fluid[1].v.x, fluid[1].v.y, fluid[1].v.z);
-    printf("%dth particle: position=(%lf,%lf,%lf) velocity=(%lf,%lf,%lf)\n",
+    printf("%dth particle: position=(%lg,%lg,%lg) velocity=(%lg,%lg,%lg)\n",
             250, fluid[250].p.x, fluid[250].p.y, fluid[250].p.z, fluid[250].v.x, fluid[250].v.y, fluid[250].v.z);
-    printf("%dth particle: position=(%lf,%lf,%lf) velocity=(%lf,%lf,%lf)\n",
+    printf("%dth particle: position=(%lg,%lg,%lg) velocity=(%lg,%lg,%lg)\n",
             500, fluid[500].p.x, fluid[500].p.y, fluid[500].p.z, fluid[500].v.x, fluid[500].v.y, fluid[500].v.z);
-    printf("%dth particle: position=(%lf,%lf,%lf) velocity=(%lf,%lf,%lf)\n",
+    printf("%dth particle: position=(%lg,%lg,%lg) velocity=(%lg,%lg,%lg)\n",
             999, fluid[999].p.x, fluid[999].p.y, fluid[999].p.z, fluid[999].v.x, fluid[999].v.y, fluid[999].v.z);
     putchar('\n');
 #endif
@@ -86,9 +95,17 @@ void container(struct plane* p) {
         vec_smul(&norm, lam);
         double d = vec_len(&norm);
         if (d < 50 * D) {
-            vec_set_len(&norm, 5 * (50 * D - d));
-            //printf("plane=%lfx+%lfy+%lfz+%lf=0\n", p->n.x, p->n.y, p->n.z, p->C);
-            //printf("a=(%lf, %lf, %lf) %lf\n", norm.x, norm.y, norm.z, vec_len(&norm));
+            struct vector dn;
+            double l = d * tan(MU);
+            dn.x = rs() * frand() * l;
+            dn.y = rs() * frand() * sqrt(sq(l) - sq(dn.x));
+            dn.z = norm.z != 0 ? -(dn.x * norm.x + dn.y * norm.y) / norm.z
+                               : rs() * sqrt(sq(l) - sq(dn.x) - sq(dn.y));
+            //printf("dn=(%lg,%lg,%lg)\n", dn.x, dn.y, dn.z);
+            vec_add(&norm, &dn);
+            vec_set_len(&norm, 40 * (50 * D - d));
+            //printf("plane=%lgx+%lgy+%lgz+%lg=0\n", p->n.x, p->n.y, p->n.z, p->C);
+            //printf("a=(%lg, %lg, %lg) %lg\n", norm.x, norm.y, norm.z, vec_len(&norm));
             if (vec_dot(&norm, &i->v) / (vec_len(&norm) * vec_len(&i->v)) > 0)
                 vec_smul(&norm, ETA);
             vec_add(&i->a, &norm);
@@ -114,6 +131,8 @@ void step() {
     interact();
     gravity();
     container(&(struct plane){{0, 1, 0}, 400});
+    container(&(struct plane){{1, 0, 0}, -100});
+    container(&(struct plane){{1, 0, 0}, 70});
     update();
 }
 
@@ -122,18 +141,18 @@ void init() {
         vec_clear(&fluid[i].p);
         vec_clear(&fluid[i].v);
         vec_clear(&fluid[i].a);
-        //fluid[i].p.x = i % 10 * 1.02;
-        //fluid[i].p.y = i / 100 * 1.02 + 100;
-        //fluid[i].p.z = i % 100 / 10 * 1.02;
-        fluid[i].p.x = i % 30 * 1.2;
-        fluid[i].p.y = i / 30 * 1.2 + 100;
+        ////fluid[i].p.x = i % 10 * 1.02;
+        ////fluid[i].p.y = i / 100 * 1.02 + 100;
+        ////fluid[i].p.z = i % 100 / 10 * 1.02;
+        //fluid[i].p.x = i % 30 * 1.2;
+        fluid[i].p.y = i / 30 * 1.2 + 300;
+        fluid[i].p.y = i;
     }
     printstats();
 }
 
 void render() {
-    //for (int i = 0; i < CHECK_POINT; i++)
-        step();
+    step();
     printstats();
 
     glClear(GL_COLOR_BUFFER_BIT);
@@ -142,10 +161,22 @@ void render() {
     every (i)
         glVertex3d(i->p.x * view_factor, i->p.y * view_factor, i->p.z * view_factor);
     glEnd();
+
     glBegin(GL_LINES);
     glVertex3d(-1, -400 * view_factor, 0);
     glVertex3d(1, -400 * view_factor, 0);
     glEnd();
+
+    glBegin(GL_LINES);
+    glVertex3d(100 * view_factor, 1, 0);
+    glVertex3d(100 * view_factor, -1, 0);
+    glEnd();
+
+    glBegin(GL_LINES);
+    glVertex3d(-70 * view_factor, 1, 0);
+    glVertex3d(-70 * view_factor, -1, 0);
+    glEnd();
+
     glFlush();
     glutSwapBuffers();
 }
@@ -160,6 +191,7 @@ void on_mouse(int button, int state, int x, int y) {
 }
 
 int main(int argc, char** argv) {
+    srand(time(0));
     init();
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
