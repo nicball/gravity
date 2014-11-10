@@ -19,6 +19,7 @@ enum {
 const double PI = 3.1415927;
 const double K = 0.2;
 const double ETA = 0.5;
+//const double MU = 0.025 * PI;
 const double MU = 0.25 * PI;
 const double D = 1;
 const double Dm = 100 * D;
@@ -39,7 +40,7 @@ struct plane {
 struct particle fluid[N];
 
 double frand() {
-    return rand() * 0.1 / RAND_MAX;
+    return rand() * 1.0 / RAND_MAX;
 }
 
 void printstats() {
@@ -132,7 +133,7 @@ void step() {
     gravity();
     container(&(struct plane){{0, 1, 0}, 400});
     container(&(struct plane){{1, 0, 0}, -100});
-    container(&(struct plane){{1, 0, 0}, 70});
+    container(&(struct plane){{1, 0, 0}, 100});
     update();
 }
 
@@ -141,11 +142,13 @@ void init() {
         vec_clear(&fluid[i].p);
         vec_clear(&fluid[i].v);
         vec_clear(&fluid[i].a);
-        ////fluid[i].p.x = i % 10 * 1.02;
-        ////fluid[i].p.y = i / 100 * 1.02 + 100;
-        ////fluid[i].p.z = i % 100 / 10 * 1.02;
-        //fluid[i].p.x = i % 30 * 1.2;
-        fluid[i].p.y = i / 30 * 1.2 + 300;
+        //fluid[i].p.x = (i % 10 - 5) * 1.02;
+        //fluid[i].p.y = i / 100 * 1.02 + 100;
+        //fluid[i].p.z = i % 100 / 10 * 1.02;
+
+        //fluid[i].p.x = (i % 30 - 15) * 1.2;
+        //fluid[i].p.y = i / 30 * 1.2 + 300;
+        
         fluid[i].p.y = i;
     }
     printstats();
@@ -173,8 +176,8 @@ void render() {
     glEnd();
 
     glBegin(GL_LINES);
-    glVertex3d(-70 * view_factor, 1, 0);
-    glVertex3d(-70 * view_factor, -1, 0);
+    glVertex3d(-100 * view_factor, 1, 0);
+    glVertex3d(-100 * view_factor, -1, 0);
     glEnd();
 
     glFlush();
