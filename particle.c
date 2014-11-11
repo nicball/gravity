@@ -97,8 +97,8 @@ void container(struct plane* p) {
         if (d < 50 * D) {
             //printf("norm=(%lg,%lg,%lg)\n", norm.x, norm.y, norm.z);
             double r = tan(frand()*MU) * vec_len(&norm);
-            double ytoz = asin(norm.y / d);
-            double xtoz = asin(norm.z / d) - 0.5*PI;
+            double ytoz = asin(norm.y / sqrt(sq(norm.z)+sq(norm.y)));
+            double xtoz = asin(norm.z / sqrt(sq(norm.x)+sq(norm.z))) - 0.5*PI;
             //printf("ytoz=%lg, xtoz=%lg\n", ytoz, xtoz);
             struct vector dn;
             dn.x = rs() * frand() * r;
