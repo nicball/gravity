@@ -6,7 +6,7 @@
 
 #include "vector.h"
 
-#define rs() (rand() % 2 ? 1 : -1)
+#define rs() (rand()%2 ? 1 : -1)
 #define sq(x) ((x)*(x))
 #define qq(x) ((x)*(x)*(x)*(x))
 #define hq(x) ((x)*(x)*(x)*(x)*(x)*(x))
@@ -19,7 +19,6 @@ enum {
 const double PI = 3.1415927;
 const double K = 0.2;
 const double ETA = 0.5;
-//const double MU = 0.025 * PI;
 const double MU = 0.25 * PI;
 const double D = 1;
 const double Dm = 100 * D;
@@ -96,18 +95,24 @@ void container(struct plane* p) {
         vec_smul(&norm, lam);
         double d = vec_len(&norm);
         if (d < 50 * D) {
+            //printf("norm=(%lg,%lg,%lg)\n", norm.x, norm.y, norm.z);
+            double r = tan(frand()*MU) * vec_len(&norm);
+            double ytoz = asin(norm.y / d);
+            double xtoz = asin(norm.z / d) - 0.5*PI;
+            //printf("ytoz=%lg, xtoz=%lg\n", ytoz, xtoz);
             struct vector dn;
-            double l = d * tan(MU);
-            dn.x = rs() * frand() * l;
-            dn.y = rs() * frand() * sqrt(sq(l) - sq(dn.x));
-            dn.z = norm.z != 0 ? -(dn.x * norm.x + dn.y * norm.y) / norm.z
-                               : rs() * sqrt(sq(l) - sq(dn.x) - sq(dn.y));
-            //printf("dn=(%lg,%lg,%lg)\n", dn.x, dn.y, dn.z);
+            dn.x = rs() * frand() * r;
+            dn.y = rs() * sqrt(sq(r)-sq(dn.x));
+            dn.z = 0;
+            //printf("1. dn=(%lg,%lg,%lg)\n", dn.x, dn.y, dn.z);
+            vec_rotate_x(&dn, -ytoz);
+            vec_rotate_y(&dn, -xtoz);
+            //printf("2. dn=(%lg,%lg,%lg)\n", dn.x, dn.y, dn.z);
             vec_add(&norm, &dn);
-            vec_set_len(&norm, 40 * (50 * D - d));
+            vec_set_len(&norm, 40 * (50*D-d));
             //printf("plane=%lgx+%lgy+%lgz+%lg=0\n", p->n.x, p->n.y, p->n.z, p->C);
             //printf("a=(%lg, %lg, %lg) %lg\n", norm.x, norm.y, norm.z, vec_len(&norm));
-            if (vec_dot(&norm, &i->v) / (vec_len(&norm) * vec_len(&i->v)) > 0)
+            if (vec_dot(&norm, &i->v) / (vec_len(&norm)*vec_len(&i->v)) > 0)
                 vec_smul(&norm, ETA);
             vec_add(&i->a, &norm);
         }
@@ -134,6 +139,8 @@ void step() {
     container(&(struct plane){{0, 1, 0}, 400});
     container(&(struct plane){{1, 0, 0}, -100});
     container(&(struct plane){{1, 0, 0}, 100});
+    container(&(struct plane){{0, 0, 1}, -100});
+    container(&(struct plane){{0, 0, 1}, 100});
     update();
 }
 
@@ -142,14 +149,14 @@ void init() {
         vec_clear(&fluid[i].p);
         vec_clear(&fluid[i].v);
         vec_clear(&fluid[i].a);
-        //fluid[i].p.x = (i % 10 - 5) * 1.02;
-        //fluid[i].p.y = i / 100 * 1.02 + 100;
-        //fluid[i].p.z = i % 100 / 10 * 1.02;
+        //fluid[i].p.x = (i%10-5) * 1.02;
+        //fluid[i].p.y = i/100*1.02 + 100;
+        //fluid[i].p.z = i%100/10 * 1.02;
 
-        //fluid[i].p.x = (i % 30 - 15) * 1.2;
-        //fluid[i].p.y = i / 30 * 1.2 + 300;
+        fluid[i].p.x = (i%30-15) * 1.2;
+        fluid[i].p.y = i/30*1.2 + 300;
         
-        fluid[i].p.y = i;
+        //fluid[i].p.y = i;
     }
     printstats();
 }
