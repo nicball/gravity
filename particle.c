@@ -22,6 +22,7 @@ const double ETA = 0.3;
 const double MU = 0.25 * PI;
 const double D = 1;
 const double Dm = 100 * D;
+const dounle Dw = 50 * D;
 const double T = 0.05;
 const struct vector G = {0, -10, 0};
 
@@ -36,34 +37,10 @@ struct plane {
     double C;
 };
 
-static inline double angle(double x, double y) {
-    if (x == 0)
-        return y>0 ? 0.5*PI : -0.5*PI;
-    double re = atan(y / x);
-    if (re >= 0)
-        return x>0 ? re : re+PI;
-    else
-        return x>0 ? re+2*PI : re+PI;
-}
-
 struct particle fluid[N];
 
-double frand() {
+static inline double frand() {
     return rand() * 1.0 / RAND_MAX;
-}
-
-void printstats() {
-#ifdef VERBOSE
-    printf("%dth particle: position=(%lg,%lg,%lg) velocity=(%lg,%lg,%lg)\n",
-            1, fluid[1].p.x, fluid[1].p.y, fluid[1].p.z, fluid[1].v.x, fluid[1].v.y, fluid[1].v.z);
-    printf("%dth particle: position=(%lg,%lg,%lg) velocity=(%lg,%lg,%lg)\n",
-            250, fluid[250].p.x, fluid[250].p.y, fluid[250].p.z, fluid[250].v.x, fluid[250].v.y, fluid[250].v.z);
-    printf("%dth particle: position=(%lg,%lg,%lg) velocity=(%lg,%lg,%lg)\n",
-            500, fluid[500].p.x, fluid[500].p.y, fluid[500].p.z, fluid[500].v.x, fluid[500].v.y, fluid[500].v.z);
-    printf("%dth particle: position=(%lg,%lg,%lg) velocity=(%lg,%lg,%lg)\n",
-            999, fluid[999].p.x, fluid[999].p.y, fluid[999].p.z, fluid[999].v.x, fluid[999].v.y, fluid[999].v.z);
-    putchar('\n');
-#endif
 }
 
 void clear() {
@@ -78,7 +55,10 @@ void interact() {
                 struct vector a = j->p;
                 vec_sub(&a, &i->p);
                 double d = vec_len(&a);
-                if (d < D) {
+                if (d == 0) {
+                    continue;
+                }
+                else if (d < D) {
                     vec_set_len(&a, -K / d);
                 }
                 else if (d >= D && d < Dm) {
@@ -104,24 +84,18 @@ void container(struct plane* p) {
         struct vector norm = p->n;
         vec_smul(&norm, lam);
         double d = vec_len(&norm);
-        if (d < 50 * D) {
-            //printf("norm=(%lg,%lg,%lg)\n", norm.x, norm.y, norm.z);
+        if (d < Dw) {
             double r = tan(frand()*MU) * vec_len(&norm);
-            double ytoz = angle(norm.y, norm.z);
-            double ztox = angle(norm.z, norm.x) - 0.5*PI;
-            //printf("ytoz=%lg, xtoz=%lg\n", ytoz, xtoz);
+            double ytoz = atan2(norm.y, norm.z);
+            double ztox = atan2(norm.z, norm.x) - 0.5*PI;
             struct vector dn;
             dn.x = rs() * frand() * r;
             dn.y = rs() * sqrt(sq(r)-sq(dn.x));
             dn.z = 0;
-            //printf("1. dn=(%lg,%lg,%lg)\n", dn.x, dn.y, dn.z);
             vec_rotate_x(&dn, -ytoz);
             vec_rotate_y(&dn, ztox);
-            //printf("2. dn=(%lg,%lg,%lg)\n", dn.x, dn.y, dn.z);
             vec_add(&norm, &dn);
-            vec_set_len(&norm, 40 * (50*D-d));
-            //printf("plane=%lgx+%lgy+%lgz+%lg=0\n", p->n.x, p->n.y, p->n.z, p->C);
-            //printf("a=(%lg, %lg, %lg) %lg\n", norm.x, norm.y, norm.z, vec_len(&norm));
+            vec_set_len(&norm, 40 * (Dw-d));
             if (vec_dot(&norm, &i->v) / (vec_len(&norm)*vec_len(&i->v)) > 0)
                 vec_smul(&norm, ETA);
             vec_add(&i->a, &norm);
@@ -169,12 +143,10 @@ void init() {
         fluid[i].p.y = i+800;
         fluid[i].p.x = 400;
     }
-    printstats();
 }
 
 void render() {
     step();
-    printstats();
 
     glClear(GL_COLOR_BUFFER_BIT);
     glColor3f(0, 0, 0.7);
@@ -197,10 +169,12 @@ void render() {
     //glVertex3d(-100 * view_factor, 1, 0);
     //glVertex3d(-100 * view_factor, -1, 0);
     //glEnd();
+
     glBegin(GL_LINES);
     glVertex3d(-1, 1, 0);
     glVertex3d(1, -1, 0);
     glEnd();
+
     glBegin(GL_LINES);
     glVertex3d(-1, -1, 0);
     glVertex3d(1, 1, 0);
