@@ -18,7 +18,7 @@ enum {
 
 const double PI = 3.1415927;
 const double K = 0.2;
-const double ETA = 0.5;
+const double ETA = 0.3;
 const double MU = 0.25 * PI;
 const double D = 1;
 const double Dm = 100 * D;
@@ -35,6 +35,16 @@ struct plane {
     struct vector n;
     double C;
 };
+
+static inline double angle(double x, double y) {
+    if (x == 0)
+        return y>0 ? 0.5*PI : -0.5*PI;
+    double re = atan(y / x);
+    if (re >= 0)
+        return x>0 ? re : re+PI;
+    else
+        return x>0 ? re+2*PI : re+PI;
+}
 
 struct particle fluid[N];
 
@@ -97,8 +107,8 @@ void container(struct plane* p) {
         if (d < 50 * D) {
             //printf("norm=(%lg,%lg,%lg)\n", norm.x, norm.y, norm.z);
             double r = tan(frand()*MU) * vec_len(&norm);
-            double ytoz = asin(norm.y / sqrt(sq(norm.z)+sq(norm.y)));
-            double xtoz = asin(norm.z / sqrt(sq(norm.x)+sq(norm.z))) - 0.5*PI;
+            double ytoz = angle(norm.y, norm.z);
+            double ztox = angle(norm.z, norm.x) - 0.5*PI;
             //printf("ytoz=%lg, xtoz=%lg\n", ytoz, xtoz);
             struct vector dn;
             dn.x = rs() * frand() * r;
@@ -106,7 +116,7 @@ void container(struct plane* p) {
             dn.z = 0;
             //printf("1. dn=(%lg,%lg,%lg)\n", dn.x, dn.y, dn.z);
             vec_rotate_x(&dn, -ytoz);
-            vec_rotate_y(&dn, -xtoz);
+            vec_rotate_y(&dn, ztox);
             //printf("2. dn=(%lg,%lg,%lg)\n", dn.x, dn.y, dn.z);
             vec_add(&norm, &dn);
             vec_set_len(&norm, 40 * (50*D-d));
@@ -137,8 +147,8 @@ void step() {
     interact();
     gravity();
     container(&(struct plane){{0, 1, 0}, 400});
-    container(&(struct plane){{1, 0, 0}, -100});
-    container(&(struct plane){{1, 0, 0}, 100});
+    container(&(struct plane){{1, -1, 0}, 0});
+    container(&(struct plane){{1, 1, 0}, 0});
     container(&(struct plane){{0, 0, 1}, -100});
     container(&(struct plane){{0, 0, 1}, 100});
     update();
@@ -153,10 +163,11 @@ void init() {
         //fluid[i].p.y = i/100*1.02 + 100;
         //fluid[i].p.z = i%100/10 * 1.02;
 
-        fluid[i].p.x = (i%30-15) * 1.2;
-        fluid[i].p.y = i/30*1.2 + 300;
+        //fluid[i].p.x = (i%30-15) * 1.2;
+        //fluid[i].p.y = i/30*1.2 + 300;
         
-        //fluid[i].p.y = i;
+        fluid[i].p.y = i+800;
+        fluid[i].p.x = 400;
     }
     printstats();
 }
@@ -177,14 +188,22 @@ void render() {
     glVertex3d(1, -400 * view_factor, 0);
     glEnd();
 
-    glBegin(GL_LINES);
-    glVertex3d(100 * view_factor, 1, 0);
-    glVertex3d(100 * view_factor, -1, 0);
-    glEnd();
+    //glBegin(GL_LINES);
+    //glVertex3d(100 * view_factor, 1, 0);
+    //glVertex3d(100 * view_factor, -1, 0);
+    //glEnd();
 
+    //glBegin(GL_LINES);
+    //glVertex3d(-100 * view_factor, 1, 0);
+    //glVertex3d(-100 * view_factor, -1, 0);
+    //glEnd();
     glBegin(GL_LINES);
-    glVertex3d(-100 * view_factor, 1, 0);
-    glVertex3d(-100 * view_factor, -1, 0);
+    glVertex3d(-1, 1, 0);
+    glVertex3d(1, -1, 0);
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex3d(-1, -1, 0);
+    glVertex3d(1, 1, 0);
     glEnd();
 
     glFlush();
