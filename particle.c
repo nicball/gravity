@@ -7,23 +7,21 @@
 #include "vector.h"
 
 #define rs() (rand()%2 ? 1 : -1)
+#define frand() (rand() * 1.0 / RAND_MAX)
 #define sq(x) ((x)*(x))
 #define qq(x) ((x)*(x)*(x)*(x))
 #define hq(x) ((x)*(x)*(x)*(x)*(x)*(x))
-#define every(i) for (struct particle* i = fluid; i != &fluid[N]; i++)
 
-enum {
-    N = 1000,
-};
-
-const double PI = 3.1415927;
-const double K = 0.2;
-const double ETA = 0.3;
-const double MU = 0.25 * PI;
-const double D = 1;
-const double Dm = 100 * D;
-const double Dw = 50 * D;
-const double T = 0.05;
+#define N    1000
+#define PI   3.1415927
+#define Km   0.2
+#define Kn   40
+#define ETA  0.3
+#define MU   (0.25 * PI)
+#define D    1
+#define Dm   (100 * D)
+#define Dw   (50 * D)
+#define T    0.05
 const struct vector G = {0, -10, 0};
 
 double view_factor = 1.0 / 1600.0;
@@ -40,17 +38,16 @@ struct plane {
 struct particle fluid[N];
 
 static inline double frand() {
-    return rand() * 1.0 / RAND_MAX;
 }
 
 void clear() {
-    every (i)
+    for (struct particle* i = fluid; i != &fluid[N]; i++)
         vec_clear(&i->a);
 }
 
 void interact() {
-    every (i) {
-        every (j) {
+    for (struct particle* i = fluid; i != &fluid[N]; i++) {
+        for (struct particle* j = fluid; j != &fluid[N]; j++) {
             if (i != j) {
                 struct vector a = j->p;
                 vec_sub(&a, &i->p);
@@ -59,10 +56,10 @@ void interact() {
                     continue;
                 }
                 else if (d < D) {
-                    vec_set_len(&a, -K / d);
+                    vec_set_len(&a, -Km / d);
                 }
                 else if (d >= D && d < Dm) {
-                    vec_set_len(&a, K / hq(d));
+                    vec_set_len(&a, Km / hq(d));
                 }
                 else {
                     vec_clear(&a);
@@ -74,37 +71,39 @@ void interact() {
 }
 
 void gravity() {
-    every (i)
+    for (struct particle* i = fluid; i != &fluid[N]; i++)
         vec_add(&i->a, &G);
 }
 
-void container(struct plane* p) {
-    every (i) {
-        double lam = (vec_dot(&p->n, &i->p) + p->C) / vec_dot(&p->n, &p->n);
-        struct vector norm = p->n;
-        vec_smul(&norm, lam);
-        double d = vec_len(&norm);
-        if (d < Dw) {
-            double r = tan(frand()*MU) * vec_len(&norm);
-            double ytoz = atan2(norm.y, norm.z);
-            double ztox = atan2(norm.z, norm.x) - 0.5*PI;
-            struct vector dn;
-            dn.x = rs() * frand() * r;
-            dn.y = rs() * sqrt(sq(r)-sq(dn.x));
-            dn.z = 0;
-            vec_rotate_x(&dn, -ytoz);
-            vec_rotate_y(&dn, ztox);
-            vec_add(&norm, &dn);
-            vec_set_len(&norm, 40 * (Dw-d));
-            if (vec_dot(&norm, &i->v) / (vec_len(&norm)*vec_len(&i->v)) > 0)
-                vec_smul(&norm, ETA);
-            vec_add(&i->a, &norm);
+void container(const struct plane* planes, int n) {
+    for (struct particle* i = fluid; i != &fluid[N]; i++) {
+        for (struct plane* p = planes; p != &planes[n]; p++) {
+            double lam = (vec_dot(&p->n, &i->p) + p->C) / vec_dot(&p->n, &p->n);
+            struct vector norm = p->n;
+            vec_smul(&norm, lam);
+            double d = vec_len(&norm);
+            if (d < Dw) {
+                double r = tan(frand()*MU) * vec_len(&norm);
+                double ytoz = atan2(norm.y, norm.z);
+                double ztox = atan2(norm.z, norm.x) - 0.5*PI;
+                struct vector dn;
+                dn.x = rs() * frand() * r;
+                dn.y = rs() * sqrt(sq(r)-sq(dn.x));
+                dn.z = 0;
+                vec_rotate_x(&dn, -ytoz);
+                vec_rotate_y(&dn, ztox);
+                vec_add(&norm, &dn);
+                vec_set_len(&norm, Kn * (Dw-d));
+                if (vec_dot(&norm, &i->v) / (vec_len(&norm)*vec_len(&i->v)) > 0)
+                    vec_smul(&norm, ETA);
+                vec_add(&i->a, &norm);
+            }
         }
     }
 }
 
 void update() {
-    every (i) {
+    for (struct particle* i = fluid; i != &fluid[N]; i++) {
         struct vector s = i->v;
         vec_smul(&s, T);
         struct vector s2 = i->a;
@@ -117,14 +116,18 @@ void update() {
 }
 
 void step() {
+    static const struct plane walls[] = {
+        {{0, 1, 0},  400},
+        {{1, -1, 0}, 0},
+        {{1, 1, 0},  0},
+        {{0, 0, 1},  -100},
+        {{0, 0, 1},  100}
+    };
+
     clear();
     interact();
     gravity();
-    container(&(struct plane){{0, 1, 0}, 400});
-    container(&(struct plane){{1, -1, 0}, 0});
-    container(&(struct plane){{1, 1, 0}, 0});
-    container(&(struct plane){{0, 0, 1}, -100});
-    container(&(struct plane){{0, 0, 1}, 100});
+    container(walls, sizeof(walls) / sizeof(walls[0]));
     update();
 }
 
@@ -151,7 +154,7 @@ void render() {
     glClear(GL_COLOR_BUFFER_BIT);
     glColor3f(0, 0, 0.7);
     glBegin(GL_POINTS);
-    every (i)
+    for (struct particle* i = fluid; i != &fluid[N]; i++)
         glVertex3d(i->p.x * view_factor, i->p.y * view_factor, i->p.z * view_factor);
     glEnd();
 
