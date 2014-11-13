@@ -76,7 +76,7 @@ void gravity() {
 
 void container(const struct plane* planes, int n) {
     for (struct particle* i = fluid; i != &fluid[N]; i++) {
-        for (struct plane* p = planes; p != &planes[n]; p++) {
+        for (const struct plane* p = planes; p != &planes[n]; p++) {
             struct vector norm = p->normal;
             double lam = (vec_dot(&norm, &i->position) + p->C) / vec_dot(&norm, &norm);
             vec_smul(&norm, lam);
@@ -117,10 +117,10 @@ void update() {
 void step() {
     static const struct plane walls[] = {
         {{0, 1, 0},  400},
-        {{1, -1, 0}, 0},
-        {{1, 1, 0},  0},
         {{0, 0, 1},  -100},
-        {{0, 0, 1},  100}
+        {{0, 0, 1},  100},
+        {{1, 0, 0},  -100},
+        {{1, 0, 0},  100}
     };
 
     clear();
@@ -135,15 +135,14 @@ void init() {
         vec_clear(&fluid[i].position);
         vec_clear(&fluid[i].velocity);
         vec_clear(&fluid[i].acceleration);
-        //fluid[i].position.x = (i%10-5) * 1.02;
-        //fluid[i].position.y = i/100*1.02 + 100;
-        //fluid[i].position.z = i%100/10 * 1.02;
+        //fluid[i].position.x = (i%10-5) * 1.0;
+        //fluid[i].position.y = i/100*1.0 + 100;
+        //fluid[i].position.z = i%100/10 * 1.0;
 
         //fluid[i].position.x = (i%30-15) * 1.2;
         //fluid[i].position.y = i/30*1.2 + 300;
         
         fluid[i].position.y = i+800;
-        fluid[i].position.x = 400;
     }
 }
 
@@ -162,25 +161,25 @@ void render() {
     glVertex3d(1, -400 * view_factor, 0);
     glEnd();
 
-    //glBegin(GL_LINES);
-    //glVertex3d(100 * view_factor, 1, 0);
-    //glVertex3d(100 * view_factor, -1, 0);
-    //glEnd();
-
-    //glBegin(GL_LINES);
-    //glVertex3d(-100 * view_factor, 1, 0);
-    //glVertex3d(-100 * view_factor, -1, 0);
-    //glEnd();
-
     glBegin(GL_LINES);
-    glVertex3d(-1, 1, 0);
-    glVertex3d(1, -1, 0);
+    glVertex3d(100 * view_factor, 1, 0);
+    glVertex3d(100 * view_factor, -1, 0);
     glEnd();
 
     glBegin(GL_LINES);
-    glVertex3d(-1, -1, 0);
-    glVertex3d(1, 1, 0);
+    glVertex3d(-100 * view_factor, 1, 0);
+    glVertex3d(-100 * view_factor, -1, 0);
     glEnd();
+
+    //glBegin(GL_LINES);
+    //glVertex3d(-1, 1, 0);
+    //glVertex3d(1, -1, 0);
+    //glEnd();
+
+    //glBegin(GL_LINES);
+    //glVertex3d(-1, -1, 0);
+    //glVertex3d(1, 1, 0);
+    //glEnd();
 
     glFlush();
     glutSwapBuffers();
