@@ -27,30 +27,29 @@ const struct vector G = {0, -10, 0};
 double view_factor = 1.0 / 1600.0;
 
 struct particle {
-    struct vector p, v, a;
+    struct vector position;
+    struct vector velocity;
+    struct vector acceleration;
 };
 
 struct plane {
-    struct vector n;
+    struct vector normal;
     double C;
 };
 
 struct particle fluid[N];
 
-static inline double frand() {
-}
-
 void clear() {
     for (struct particle* i = fluid; i != &fluid[N]; i++)
-        vec_clear(&i->a);
+        vec_clear(&i->acceleration);
 }
 
 void interact() {
     for (struct particle* i = fluid; i != &fluid[N]; i++) {
         for (struct particle* j = fluid; j != &fluid[N]; j++) {
             if (i != j) {
-                struct vector a = j->p;
-                vec_sub(&a, &i->p);
+                struct vector a = j->position;
+                vec_sub(&a, &i->position);
                 double d = vec_len(&a);
                 if (d == 0) {
                     continue;
@@ -64,7 +63,7 @@ void interact() {
                 else {
                     vec_clear(&a);
                 }
-                vec_add(&i->a, &a);
+                vec_add(&i->acceleration, &a);
             }
         }
     }
@@ -72,14 +71,14 @@ void interact() {
 
 void gravity() {
     for (struct particle* i = fluid; i != &fluid[N]; i++)
-        vec_add(&i->a, &G);
+        vec_add(&i->acceleration, &G);
 }
 
 void container(const struct plane* planes, int n) {
     for (struct particle* i = fluid; i != &fluid[N]; i++) {
         for (struct plane* p = planes; p != &planes[n]; p++) {
-            double lam = (vec_dot(&p->n, &i->p) + p->C) / vec_dot(&p->n, &p->n);
-            struct vector norm = p->n;
+            struct vector norm = p->normal;
+            double lam = (vec_dot(&norm, &i->position) + p->C) / vec_dot(&norm, &norm);
             vec_smul(&norm, lam);
             double d = vec_len(&norm);
             if (d < Dw) {
@@ -94,9 +93,9 @@ void container(const struct plane* planes, int n) {
                 vec_rotate_y(&dn, ztox);
                 vec_add(&norm, &dn);
                 vec_set_len(&norm, Kn * (Dw-d));
-                if (vec_dot(&norm, &i->v) / (vec_len(&norm)*vec_len(&i->v)) > 0)
+                if (vec_dot(&norm, &i->velocity) / (vec_len(&norm)*vec_len(&i->velocity)) > 0)
                     vec_smul(&norm, ETA);
-                vec_add(&i->a, &norm);
+                vec_add(&i->acceleration, &norm);
             }
         }
     }
@@ -104,14 +103,14 @@ void container(const struct plane* planes, int n) {
 
 void update() {
     for (struct particle* i = fluid; i != &fluid[N]; i++) {
-        struct vector s = i->v;
+        struct vector s = i->velocity;
         vec_smul(&s, T);
-        struct vector s2 = i->a;
+        struct vector s2 = i->acceleration;
         vec_add(&s, vec_smul(&s2, sq(T) * 0.5));
-        struct vector dv = i->a;
+        struct vector dv = i->acceleration;
         vec_smul(&dv, T);
-        vec_add(&i->p, &s);
-        vec_add(&i->v, &dv);
+        vec_add(&i->position, &s);
+        vec_add(&i->velocity, &dv);
     }
 }
 
@@ -133,18 +132,18 @@ void step() {
 
 void init() {
     for (int i = 0; i != N; i++) {
-        vec_clear(&fluid[i].p);
-        vec_clear(&fluid[i].v);
-        vec_clear(&fluid[i].a);
-        //fluid[i].p.x = (i%10-5) * 1.02;
-        //fluid[i].p.y = i/100*1.02 + 100;
-        //fluid[i].p.z = i%100/10 * 1.02;
+        vec_clear(&fluid[i].position);
+        vec_clear(&fluid[i].velocity);
+        vec_clear(&fluid[i].acceleration);
+        //fluid[i].position.x = (i%10-5) * 1.02;
+        //fluid[i].position.y = i/100*1.02 + 100;
+        //fluid[i].position.z = i%100/10 * 1.02;
 
-        //fluid[i].p.x = (i%30-15) * 1.2;
-        //fluid[i].p.y = i/30*1.2 + 300;
+        //fluid[i].position.x = (i%30-15) * 1.2;
+        //fluid[i].position.y = i/30*1.2 + 300;
         
-        fluid[i].p.y = i+800;
-        fluid[i].p.x = 400;
+        fluid[i].position.y = i+800;
+        fluid[i].position.x = 400;
     }
 }
 
@@ -155,7 +154,7 @@ void render() {
     glColor3f(0, 0, 0.7);
     glBegin(GL_POINTS);
     for (struct particle* i = fluid; i != &fluid[N]; i++)
-        glVertex3d(i->p.x * view_factor, i->p.y * view_factor, i->p.z * view_factor);
+        glVertex3d(i->position.x * view_factor, i->position.y * view_factor, i->position.z * view_factor);
     glEnd();
 
     glBegin(GL_LINES);
