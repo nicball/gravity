@@ -22,7 +22,7 @@ const double ETA = 0.3;
 const double MU = 0.25 * PI;
 const double D = 1;
 const double Dm = 100 * D;
-const dounle Dw = 50 * D;
+const double Dw = 50 * D;
 const double T = 0.05;
 const struct vector G = {0, -10, 0};
 
