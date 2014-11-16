@@ -7,25 +7,25 @@
 #include "plane.hpp"
 #include "gravity.hpp"
 
-particle::list fluid;
+particle::list world;
 double view_factor = 1.0 / 1600.0;
 
 void init() {
-    for (int i = 0; i != fluid.size(); i++) {
-        fluid[i].position.clear();
-        fluid[i].velocity.clear();
-        fluid[i].acceleration.clear();
-        //fluid[i].position.x = (i%10-5) * 1.0;
-        //fluid[i].position.y = i/100*1.0 + 100;
-        //fluid[i].position.z = i%100/10 * 1.0;
+    for (int i = 0; i != world.size(); i++) {
+        world[i].position.clear();
+        world[i].velocity.clear();
+        world[i].acceleration.clear();
+        //world[i].position.x = (i%10-5) * 1.0;
+        //world[i].position.y = i/100*1.0 + 100;
+        //world[i].position.z = i%100/10 * 1.0;
 
-        //fluid[i].position.x = (i%30-15) * 1.2;
-        //fluid[i].position.y = i/30*1.2 + 300;
+        //world[i].position.x = (i%30-15) * 1.2;
+        //world[i].position.y = i/30*1.2 + 300;
         
-        fluid[i].position.y = i+800;
-        fluid[i].position.x = 400;
+        world[i].position.y = i+800;
+        world[i].position.x = 400;
     }
-    fluid.clear_npc()
+    world.clear_npc()
          .add_npc(gravity)
          .add_npc(plane{{0, 1, 0},  400})
          .add_npc(plane{{0, 0, 1},  -100})
@@ -35,12 +35,12 @@ void init() {
 }
 
 void render() {
-    fluid.step();
+    world.step();
 
     glClear(GL_COLOR_BUFFER_BIT);
     glColor3f(0, 0, 0.7);
     glBegin(GL_POINTS);
-    for (auto& i : fluid)
+    for (auto& i : world)
         glVertex3d(i.position.x * view_factor, i.position.y * view_factor, i.position.z * view_factor);
     glEnd();
 
