@@ -89,27 +89,27 @@ struct vector3d {
     }
 };
 
-vector3d operator + (vector3d lhs, const vector3d& rhs) {
+inline vector3d operator + (vector3d lhs, const vector3d& rhs) {
     return lhs += rhs;
 }
 
-vector3d operator - (vector3d lhs, const vector3d& rhs) {
+inline vector3d operator - (vector3d lhs, const vector3d& rhs) {
     return lhs -= rhs;
 }
 
-vector3d operator * (vector3d lhs, double rhs) {
+inline vector3d operator * (vector3d lhs, double rhs) {
     return lhs *= rhs;
 }
 
-vector3d operator / (vector3d lhs, double rhs) {
+inline vector3d operator / (vector3d lhs, double rhs) {
     return lhs /= rhs;
 }
 
-vector3d operator * (double lhs, vector3d rhs) {
+inline vector3d operator * (double lhs, vector3d rhs) {
     return rhs *= lhs;
 }
 
-double operator * (vector3d lhs, const vector3d& rhs) {
+inline double operator * (vector3d lhs, const vector3d& rhs) {
     return lhs.dot(rhs);
 }
 
