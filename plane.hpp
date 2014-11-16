@@ -16,7 +16,7 @@ struct plane {
 
     static double frand() {
         static std::mt19937 gen{std::random_device{}()};
-        static std::uniform_real_distribution<> dis(0, 1);
+        static std::uniform_real_distribution<> dis{0, 1};
         return dis(gen);
     }
 
