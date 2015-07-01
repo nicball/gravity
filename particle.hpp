@@ -8,12 +8,11 @@
 
 struct particle {
     class list;
-    static constexpr int N      = 1000;
-    static constexpr double PI  = 3.1415927;
-    static constexpr double T   = 0.05;
-    static constexpr double D   = 1;
-    static constexpr double Dm  = 100 * D;
-    static constexpr double K   = 0.2;
+    static constexpr int    N    = 1000;
+    static constexpr double PI   = 3.1415927;
+    static constexpr double T    = 0.05;
+    static constexpr double Dmin = 0.001;
+    static constexpr double K    = 0.2;
 
     vector3d position;
     vector3d velocity;
