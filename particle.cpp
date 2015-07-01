@@ -7,7 +7,7 @@ particle::list& particle::list::interact() {
                 auto a = j.position;
                 a -= i.position;
                 auto d = a.length();
-                if (d < Dm) {
+                if (d < Dmin) {
                     continue;
                 }
                 else {
