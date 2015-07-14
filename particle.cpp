@@ -7,12 +7,8 @@ particle::list& particle::list::interact() {
                 auto a = j.position;
                 a -= i.position;
                 auto d = a.length();
-                if (d < Dmin) {
-                    continue;
-                }
-                else {
-                    a.set_length(-K/d + K/(d*d*d*d*d*d));
-                }
+                if (d < Dmin || d > 100*d) continue;
+                a.set_length((K/(d*d) - K/(d*d*d*d*d*d)) / 100);
                 i.acceleration += a;
             }
         }

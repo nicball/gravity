@@ -17,19 +17,22 @@ void init() {
         //world[i].position.y = i/100*1.0 + 100;
         //world[i].position.z = i%100/10 * 1.0;
 
-        //world[i].position.x = (i%30-15) * 1.2;
-        //world[i].position.y = i/30*1.2 + 300;
+        //world[i].position.x = (i%30-15) * 10;
+        //world[i].position.y = i/30*10 + 300;
         
-        world[i].position.y = i+800;
+        world[i].position.y = i+1400;
         world[i].position.x = 400;
+
+        //world[i].position.y = i+2000;
+        //world[i].position.x = i+200;
     }
     world.clear_npc()
          .add_npc(gravity)
          .add_npc(plane{{0, 1, 0},  400})
          .add_npc(plane{{0, 0, 1},  -100})
          .add_npc(plane{{0, 0, 1},  100})
-         .add_npc(plane{{1, 1, 0},  0})
-         .add_npc(plane{{1, -1, 0},  0});
+         .add_npc(plane{{1, 1, 0}, 0})
+         .add_npc(plane{{1, -1, 0}, 0});
 }
 
 void render() {

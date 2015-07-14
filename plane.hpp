@@ -9,7 +9,7 @@ struct plane {
     static constexpr double K   = 40;
     static constexpr double ETA = 0.3;
     static constexpr double MU  = 0.25 * PI;
-    static constexpr double D   = 50 * particle::D;
+    static constexpr double D   = 50;
 
     vector3d normal;
     double C;
