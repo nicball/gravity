@@ -1,7 +1,7 @@
-#ifndef VECTOR3D_HPP_
-#define VECTOR3D_HPP_
+#ifndef VECTOR3D_H
+#define VECTOR3D_H
 
-#include <cmath>
+#include "math.h"
 
 struct vector3d {
     double x, y, z;
@@ -58,32 +58,32 @@ struct vector3d {
         return *this;
     }
 
-    vector3d& rotate_x(double roll) {
+    vector3d& rotate_x(double rad) {
         auto r = std::sqrt(y*y + z*z);
         if (r != 0) {
-            auto old = std::atan2(y, z);
-            y = std::sin(old-roll) * r;
-            z = std::cos(old-roll) * r;
+            auto old = std::atan2(z, y);
+            z = std::sin(old + rad) * r;
+            y = std::cos(old + rad) * r;
         }
         return *this;
     }
 
-    vector3d& rotate_y(double pitch) {
-        auto r = std::sqrt(z*z + x*x);
+    vector3d& rotate_y(double rad) {
+        auto r = std::sqrt(x*x + z*z);
         if (r != 0) {
             auto old = std::atan2(z, x);
-            z = std::sin(old-pitch) * r;
-            z = std::cos(old-pitch) * r;
+            z = std::sin(old + rad) * r;
+            x = std::cos(old + rad) * r;
         }
         return *this;
     }
 
-    vector3d& rotate_z(double yaw) {
-        auto r = std::sqrt(y*y + x*x);
+    vector3d& rotate_z(double rad) {
+        auto r = std::sqrt(x*x + y*y);
         if (r != 0) {
             auto old = std::atan2(y, x);
-            y = std::sin(old-yaw) * r;
-            x = std::cos(old-yaw) * r;
+            y = std::sin(old + rad) * r;
+            x = std::cos(old + rad) * r;
         }
         return *this;
     }
