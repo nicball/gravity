@@ -1,17 +1,15 @@
-#include "particle.hpp"
+#include "world.h"
 
-particle::list& particle::list::interact() {
-    for (auto& i : *this) {
-        for (auto& j : *this) {
+void interact(world& w) {
+    for (auto& i : w) {
+        for (auto& j : w) {
             if (&i != &j) {
-                auto a = j.position;
-                a -= i.position;
+                auto a = j.position - i.position;
                 auto d = a.length();
-                if (d < Dmin || d > 100*d) continue;
-                a.set_length((K/(d*d) - K/(d*d*d*d*d*d)) / 100);
+                if (d < world::Dmin || d > 100 * world::Dmin) continue;
+                a.set_length(world::K / (d*d*d) - world::K / (d*d));
                 i.acceleration += a;
             }
         }
     }
-    return *this;
 }
