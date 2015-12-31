@@ -1,49 +1,49 @@
-#ifndef PARTICLE_HPP_
-#define PARTICLE_HPP_
+#ifndef PARTICLE_H
+#define PARTICLE_H
+#pragma once
 
+#include "vector3d.h"
 #include <array>
 #include <functional>
 #include <vector>
-#include "vector3d.hpp"
 
 struct particle {
-    class list;
-    static constexpr int    N    = 1000;
-    static constexpr double PI   = 3.1415927;
-    static constexpr double T    = 0.05;
-    static constexpr double Dmin = 0.01;
-    static constexpr double K    = 0.2;
-
     vector3d position;
     vector3d velocity;
     vector3d acceleration;
 };
 
-class particle::list: public std::array<particle, N> {
+class world : public std::vector<particle> {
 public:
-    using action = std::function<void(list&)>;
+    static constexpr double T = 0.005;
+    static constexpr double Dmin = 0.01;
+    static constexpr double K = 0.001;
 
-    list& add_npc(action a) {
+    world(size_t n): vector<particle>(n) {}
+    ~world() = default;
+
+    using action = std::function<void(world&)>;
+
+    world& add_npc(action a) {
         npc.push_back(a);
         return *this;
     }
 
-    list& clear_npc() {
+    world& clear_npc() {
         npc.clear();
         return *this;
     }
 
-    list& step() {
+    world& step() {
         for (auto& i : *this)
             i.acceleration.clear();
         for (auto& n : npc)
             n(*this);
-        interact();
         update();
         return *this;
     }
 
-    list& update() {
+    world& update() {
         for (auto& i : *this) {
             vector3d s = i.velocity;
             s *= T;
@@ -58,10 +58,17 @@ public:
         return *this;
     }
 
-    list& interact();
-
 private:
     std::vector<action> npc;
 };
+
+void interact(class world&);
+
+constexpr vector3d G = { 0, -10, 0 };
+inline void gravity(class world& w) {
+    for (auto& i : w) {
+        i.acceleration += G;
+    }
+}
 
 #endif
