@@ -7,7 +7,7 @@
 #include <random>
 
 struct plane {
-    static constexpr double K = 500;
+    static constexpr double K = 100;
     static constexpr double ETA = 0.3;
     static constexpr double MU = 0.25 * PI;
     static constexpr double D = 50;
