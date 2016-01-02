@@ -6,6 +6,10 @@
 struct vector3d {
     double x, y, z;
 
+    constexpr vector3d(): x{}, y{}, z{} {}
+    constexpr vector3d(double x, double y, double z):
+        x{x}, y{y}, z{z} {}
+
     vector3d& operator += (const vector3d& rhs) {
         x += rhs.x;
         y += rhs.y;
