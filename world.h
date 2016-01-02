@@ -8,16 +8,17 @@
 #include <vector>
 
 struct particle {
+    double mass;
     vector3d position;
     vector3d velocity;
     vector3d acceleration;
+
+    particle(): mass{}, position{}, velocity{}, acceleration{} {}
 };
 
-class world : public std::vector<particle> {
+class world: public std::vector<particle> {
 public:
-    static constexpr double T = 0.005;
-    static constexpr double Dmin = 0.01;
-    static constexpr double K = 0.001;
+    static constexpr double T = 0.05;
 
     world(size_t n): vector<particle>(n) {}
     ~world() = default;
@@ -64,7 +65,7 @@ private:
 
 void interact(class world&);
 
-constexpr vector3d G = { 0, -10, 0 };
+constexpr vector3d G = {0, -10, 0};
 inline void gravity(class world& w) {
     for (auto& i : w) {
         i.acceleration += G;
