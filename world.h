@@ -8,15 +8,18 @@
 #include <vector>
 
 struct particle {
-    double mass;
+    std::string name;
     vector3d position;
     vector3d velocity;
+    double mass{};
+    double radius{};
+    float color[3]{};
     vector3d acceleration;
 
-    particle(): mass{}, position{}, velocity{}, acceleration{} {}
+    particle() = default;
 };
 
-class world: public std::vector<particle> {
+class world: private std::vector<particle> {
 public:
     static constexpr double T = 0.05;
 
@@ -24,6 +27,11 @@ public:
     ~world() = default;
 
     using action = std::function<void(world&)>;
+
+    using std::vector<particle>::begin;
+    using std::vector<particle>::end;
+    using std::vector<particle>::operator[];
+    using std::vector<particle>::size;
 
     world& add_npc(action a) {
         npc.push_back(a);
@@ -36,23 +44,19 @@ public:
     }
 
     world& step() {
-        for (auto& i : *this)
-            i.acceleration.clear();
         for (auto& n : npc)
             n(*this);
         update();
+        for (auto& i : *this)
+            i.acceleration.clear();
         return *this;
     }
 
     world& update() {
         for (auto& i : *this) {
-            vector3d s = i.velocity;
-            s *= T;
-            vector3d s2 = i.acceleration;
-            s2 *= T * T * 0.5;
-            s += s2;
-            vector3d dv = i.acceleration;
-            dv *= T;
+            vector3d s = i.velocity * T;
+            s += 0.5*i.acceleration*T*T;
+            vector3d dv = i.acceleration * T;
             i.position += s;
             i.velocity += dv;
         }
@@ -63,10 +67,10 @@ private:
     std::vector<action> npc;
 };
 
-void interact(class world&);
+void interact(class world&, double E = 0.001);
 
-constexpr vector3d G = {0, -10, 0};
 inline void gravity(class world& w) {
+    constexpr vector3d G = {0, -10, 0};
     for (auto& i : w) {
         i.acceleration += G;
     }

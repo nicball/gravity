@@ -1,9 +1,8 @@
 #include "world.h"
 
-void interact(world& w) {
+void interact(world& w, double E) {
     static constexpr double R = 0.2;
     static constexpr double K = 0.5;
-    static constexpr double E = 0.001;
     for (auto& i : w) {
         for (auto& j : w) {
             if (&i != &j) {

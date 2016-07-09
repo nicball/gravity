@@ -1,6 +1,7 @@
 #ifndef VECTOR3D_H
 #define VECTOR3D_H
 
+#include <iostream>
 #include "math.h"
 
 struct vector3d {
@@ -115,6 +116,11 @@ inline vector3d operator * (double lhs, vector3d rhs) {
 
 inline double operator * (vector3d lhs, const vector3d& rhs) {
     return lhs.dot(rhs);
+}
+
+inline std::ostream& operator << (std::ostream& os, const vector3d v) {
+    os << '(' << v.x << ',' << v.y << ',' << v.z << ')';
+    return os;
 }
 
 #endif
