@@ -18,6 +18,7 @@ class world* world;
 double view_factor = 1.0;
 double view_x = 0;
 double view_y = 0;
+bool paused = false;
 constexpr double WATER_MASS = 100;
 constexpr double AIR_MASS = 1;
 constexpr float BLUE[] = {0.0f, 0.0f, 0.7f};
@@ -68,7 +69,7 @@ void init_water_simulation() {
 
 void init_solar_system_simulation() {
     constexpr double G = 6.6732E-11;
-    world = new class world(10, 3600);
+    world = new class world(10, 3600 * 24);
     view_factor = 1.0 / 8e11;
     particle data[] = {
         { "sun", { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, 1.989E30, 6.96342E8, { 1.0f, 1.0f, 0.0f }, {} },
@@ -134,13 +135,15 @@ void render() {
     glFlush();
     glutSwapBuffers();
 
-    world->step();
-    static double counter = 0.0, sum = 0.0;
-    counter += world->accuracy();
-    sum += world->accuracy();
-    if (std::floor(counter) == 1.0) {
-        std::cout << "PIA "  << sum << std::endl;
-        counter = 0.0;
+    if (!paused) {
+        world->step();
+        static double counter = 0.0, sum = 0.0;
+        counter += world->accuracy();
+        sum += world->accuracy();
+        if (std::floor(counter) == 1.0) {
+            std::cout << "PIA "  << sum << std::endl;
+            counter = 0.0;
+        }
     }
 }
 
@@ -154,6 +157,17 @@ void on_mouse(int button, int state, int x, int y) {
         view_factor /= 2.0;
         view_x /= 2.0;
         view_y /= 2.0;
+    }
+}
+
+void on_keyboard(unsigned char key, int, int) {
+    switch (key) {
+        case 'p':
+            paused = !paused;
+            break;
+        default:
+            puts("Unknown key press.");
+            break;
     }
 }
 
@@ -187,6 +201,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("");
     glutDisplayFunc(render);
     glutSpecialFunc(on_specialkey);
+    glutKeyboardFunc(on_keyboard);
     glutIdleFunc(render);
     glutMouseFunc(on_mouse);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
