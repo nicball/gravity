@@ -17,52 +17,43 @@ struct vector3d {
         z += rhs.z;
         return *this;
     }
-
     vector3d& operator -= (const vector3d& rhs) {
         x -= rhs.x;
         y -= rhs.y;
         z -= rhs.z;
         return *this;
     }
-
     vector3d& operator *= (double rhs) {
         x *= rhs;
         y *= rhs;
         z *= rhs;
         return *this;
     }
-
     vector3d& operator /= (double rhs) {
         x /= rhs;
         y /= rhs;
         z /= rhs;
         return *this;
     }
-
     double dot(const vector3d& rhs) const {
         return x*rhs.x + y*rhs.y + z*rhs.z;
     }
-
     double length() const {
         return std::sqrt(dot(*this));
     }
-
     vector3d& set_length(double d) {
         auto o = length();
         (*this *= d) /= o;
         return *this;
     }
-
     vector3d& clear() {
         x = y = z = 0;
         return *this;
     }
-
     vector3d& normalize() {
         *this /= length();
         return *this;
     }
-
     vector3d& rotate_x(double rad) {
         auto r = std::sqrt(y*y + z*z);
         if (r != 0) {
@@ -72,7 +63,6 @@ struct vector3d {
         }
         return *this;
     }
-
     vector3d& rotate_y(double rad) {
         auto r = std::sqrt(x*x + z*z);
         if (r != 0) {
@@ -82,7 +72,6 @@ struct vector3d {
         }
         return *this;
     }
-
     vector3d& rotate_z(double rad) {
         auto r = std::sqrt(x*x + y*y);
         if (r != 0) {

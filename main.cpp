@@ -14,8 +14,7 @@ void array_assign(const T (&from)[N], T (&to)[N]) {
     std::copy(std::begin(from), std::end(from), std::begin(to));
 }
 
-constexpr size_t WORLD_SIZE = 10;
-class world world(WORLD_SIZE);
+class world* world;
 double view_factor = 1.0;
 double view_x = 0;
 double view_y = 0;
@@ -26,30 +25,32 @@ constexpr float RED[] = {0.7f, 0.0f, 0.0f};
 constexpr float WHITE[] = {1.0f, 1.0f, 1.0f};
 
 void init_water_simulation() {
+    world = new class world(1000);
     view_factor = 1.0 / 1600.0;
-    for (int i = 0; i != WORLD_SIZE; ++i) {
+    for (size_t i = 0; i != world->size(); ++i) {
+        (*world)[i].radius = 0.2;
         if (i % 2 == 0) {
-            world[i].mass = AIR_MASS;
-            array_assign(RED, world[i].color);
+            (*world)[i].mass = AIR_MASS;
+            array_assign(RED, (*world)[i].color);
         }
         else {
-            world[i].mass = WATER_MASS;
-            array_assign(BLUE, world[i].color);
+            (*world)[i].mass = WATER_MASS;
+            array_assign(BLUE, (*world)[i].color);
         }
-        //world[i].position.x = (i%10-5) * 1.0;
-        //world[i].position.y = i/100*1.0 + 100;
-        //world[i].position.z = i%100/10 * 1.0;
+        //(*world)[i].position.x = (i%10-5) * 1.0;
+        //(*world)[i].position.y = i/100*1.0 + 100;
+        //(*world)[i].position.z = i%100/10 * 1.0;
 
-        //world[i].position.x = (i%30-15) * 4;
-        //world[i].position.y = i/30*4;
+        //(*world)[i].position.x = (i%30-15) * 4;
+        //(*world)[i].position.y = i/30*4;
 
-        world[i].position.y = 4*i + 500;
-        world[i].position.x = 0;
+        (*world)[i].position.y = 4*i + 500;
+        (*world)[i].position.x = 0;
 
-        //world[i].position.y = 4*i+500;
-        //world[i].position.x = 400;
+        //(*world)[i].position.y = 4*i+500;
+        //(*world)[i].position.x = 400;
     }
-    world.add_npc(gravity)
+    world->add_npc(gravity)
         .add_npc([](auto&& x) { interact(x); })
         //.add_npc(plane{{0, 1, 0}, 400})
         //.add_npc(plane{{0, 0, 1}, -100})
@@ -67,6 +68,7 @@ void init_water_simulation() {
 
 void init_solar_system_simulation() {
     constexpr double G = 6.6732E-11;
+    world = new class world(10, 3600);
     view_factor = 1.0 / 8e11;
     particle data[] = {
         { "sun", { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, 1.989E30, 6.96342E8, { 1.0f, 1.0f, 0.0f }, {} },
@@ -82,26 +84,21 @@ void init_solar_system_simulation() {
 
         //{ "VY Canis Majoris", { -5E12, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, 1.989E30 * 17, 6.96342E8 * 1420, { 1.0f, 0.0f, 0.0f }, {} }
     };
-    for (int i = 0; i != WORLD_SIZE; ++i) {
-        world[i] = data[i];
+    for (size_t i = 0; i != world->size(); ++i) {
+        (*world)[i] = data[i];
     }
-    world.add_npc([](auto&& x) { interact(x, G); });
+    world->add_npc([](auto&& x) { interact(x, G); });
 }
 
 void render() {
-    for (auto& i : world) {
-        std::cout << i.name
-                  << " v="
-                  << i.velocity
-                  << " a="
-                  << i.acceleration
-                  << std::endl;
+    for (auto& i : *world) {
+        std::cout << i << std::endl;
     }
     std::cout << std::endl;
     
     glClear(GL_COLOR_BUFFER_BIT);
     glBegin(GL_POINTS);
-    for (auto& i : world) {
+    for (auto& i : *world) {
         glColor3fv(i.color);
         glVertex3d(i.position.x * view_factor + view_x, i.position.y * view_factor + view_y, i.position.z * view_factor);
     }
@@ -137,10 +134,10 @@ void render() {
     glFlush();
     glutSwapBuffers();
 
-    world.step();
+    world->step();
     static double counter = 0.0, sum = 0.0;
-    counter += world::T;
-    sum += world::T;
+    counter += world->accuracy();
+    sum += world->accuracy();
     if (std::floor(counter) == 1.0) {
         std::cout << "PIA "  << sum << std::endl;
         counter = 0.0;
@@ -182,7 +179,7 @@ void on_specialkey(int key, int x, int y) {
 
 int main(int argc, char** argv) {
     init_solar_system_simulation();
-    // init_water_simulation();
+    //init_water_simulation();
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
     glutInitWindowPosition(100, 100);

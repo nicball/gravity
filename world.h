@@ -6,6 +6,7 @@
 #include <array>
 #include <functional>
 #include <vector>
+#include <iostream>
 
 struct particle {
     std::string name;
@@ -19,11 +20,22 @@ struct particle {
     particle() = default;
 };
 
+inline std::ostream& operator<< (std::ostream& os, const particle& p) {
+    os << p.name
+       << " pos=" << p.position
+       << " v=" << p.velocity
+       << " m=" << p.mass
+       << " r=" << p.radius
+       << " a=" << p.acceleration;
+    return os;
+}
+
 class world: private std::vector<particle> {
+    double T = 0.05;
 public:
-    static constexpr double T = 0.05;
 
     world(size_t n): vector<particle>(n) {}
+    world(size_t n, double acc): vector<particle>(n), T{acc} {}
     ~world() = default;
 
     using action = std::function<void(world&)>;
@@ -33,25 +45,23 @@ public:
     using std::vector<particle>::operator[];
     using std::vector<particle>::size;
 
+    double accuracy() { return T; }
     world& add_npc(action a) {
         npc.push_back(a);
         return *this;
     }
-
     world& clear_npc() {
         npc.clear();
         return *this;
     }
-
     world& step() {
+        for (auto& i : *this)
+            i.acceleration.clear();
         for (auto& n : npc)
             n(*this);
         update();
-        for (auto& i : *this)
-            i.acceleration.clear();
         return *this;
     }
-
     world& update() {
         for (auto& i : *this) {
             vector3d s = i.velocity * T;
