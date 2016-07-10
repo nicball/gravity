@@ -68,10 +68,7 @@ void init_water_simulation() {
 }
 
 void init_solar_system_simulation() {
-    constexpr double G = 6.6732E-11;
-    world = new class world(10, 3600 * 24);
-    view_factor = 1.0 / 8e11;
-    particle data[] = {
+    static particle data[] = {
         { "sun", { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, 1.989E30, 6.96342E8, { 1.0f, 1.0f, 0.0f }, {} },
         { "mecury", { 0.0, 4.60012E10, 0.0 }, { 4.787E4, 0.0, 0.0 }, 3.3022E23, 2.4397E6, { 0.8f, 0.8f, 0.8f }, {} },
         { "venus", { 0.0, 1.07477E11, 0.0 }, { 3.502E4, 0.0, 0.0 }, 4.8676E24, 6.0518E6, { 0.8f, 1.0f, 0.0f }, {} },
@@ -83,8 +80,11 @@ void init_solar_system_simulation() {
         { "uranus", { 0.0, 2.748938461E12, 0.0 }, { 6.81E3, 0.0, 0.0, }, 8.6810E25, 2.5362E7, { 0.4f, 0.8f, 1.0f }, {} },
         { "neptune", { 0.0, 4.452940833E12, 0.0 }, { 5.43E3, 0.0, 0.0 }, 1.0243E26, 2.4622E7, { 0.2f, 0.6f, 1.0f }, {} },
 
-        //{ "VY Canis Majoris", { -5E12, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, 1.989E30 * 17, 6.96342E8 * 1420, { 1.0f, 0.0f, 0.0f }, {} }
+        { "VY Canis Majoris", { -5E12, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, 1.989E30 * 17, 6.96342E8 * 1420, { 1.0f, 0.0f, 0.0f }, {} }
     };
+    constexpr double G = 6.6732E-11;
+    world = new class world(sizeof data / sizeof *data, 3600);
+    view_factor = 1.0 / 8e11;
     for (size_t i = 0; i != world->size(); ++i) {
         (*world)[i] = data[i];
     }
