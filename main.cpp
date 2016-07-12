@@ -19,6 +19,8 @@ double view_factor = 1.0;
 double view_x = 0;
 double view_y = 0;
 bool paused = false;
+bool focused = false;
+size_t focus_idx = 0;
 constexpr double WATER_MASS = 100;
 constexpr double AIR_MASS = 1;
 constexpr float BLUE[] = {0.0f, 0.0f, 0.7f};
@@ -92,16 +94,20 @@ void init_solar_system_simulation() {
 }
 
 void render() {
-    for (auto& i : *world) {
-        std::cout << i << std::endl;
-    }
-    std::cout << std::endl;
+    //for (auto& i : *world) {
+    //    std::cout << i << std::endl;
+    //}
+    //std::cout << std::endl;
     
     glClear(GL_COLOR_BUFFER_BIT);
     glBegin(GL_POINTS);
     for (auto& i : *world) {
         glColor3fv(i.color);
-        glVertex3d(i.position.x * view_factor + view_x, i.position.y * view_factor + view_y, i.position.z * view_factor);
+        auto pos = i.position;
+        if (focused) {
+            pos -= (*world)[focus_idx].position;
+        }
+        glVertex3d(pos.x * view_factor + view_x, pos.y * view_factor + view_y, pos.z * view_factor);
     }
     glEnd();
 /*
@@ -164,6 +170,19 @@ void on_keyboard(unsigned char key, int, int) {
     switch (key) {
         case 'p':
             paused = !paused;
+            break;
+        case 'j':
+            focused = true;
+            focus_idx = (focus_idx + 1) % world->size();
+            view_x = view_y = 0;
+            break;
+        case 'k':
+            focused = true;
+            focus_idx = (focus_idx - 1) % world->size();
+            view_x = view_y = 0;
+            break;
+        case 'f':
+            focused = false;
             break;
         default:
             puts("Unknown key press.");
