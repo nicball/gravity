@@ -71,7 +71,8 @@ void init_water_simulation() {
 
 void init_solar_system_simulation() {
     static particle data[] = {
-        { "sun", { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, 1.989E30, 6.96342E8, { 1.0f, 1.0f, 0.0f }, {} },
+        { "sun", { 0.0, -5E5, 0.0 }, { 0.0, 0.0, 0.0 }, 1.989E30, 6.96342E8, { 1.0f, 1.0f, 0.0f }, {} },
+        //{ "sun", { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, 1.989E30, 6.96342E8, { 1.0f, 1.0f, 0.0f }, {} },
         { "mecury", { 0.0, 4.60012E10, 0.0 }, { 4.787E4, 0.0, 0.0 }, 3.3022E23, 2.4397E6, { 0.8f, 0.8f, 0.8f }, {} },
         { "venus", { 0.0, 1.07477E11, 0.0 }, { 3.502E4, 0.0, 0.0 }, 4.8676E24, 6.0518E6, { 0.8f, 1.0f, 0.0f }, {} },
         { "earth", { 0.0, 1.47098074E11, 0.0 }, { 2.979E4, 0.0, 0.0 }, 5.9742E24, 6.371E6, { 0.0f, 1.0f, 1.0f }, {} },
@@ -93,6 +94,18 @@ void init_solar_system_simulation() {
     world->add_npc([](auto&& x) { interact(x, G); });
 }
 
+void draw_circle(double x, double y, double r, float color[3]) {
+    glBegin(GL_TRIANGLE_FAN);
+    glColor3fv(color);
+    glVertex2d(x, y);
+    for (int i = 0; i < 200; ++i) {
+        auto angle = i * 2*PI/100;
+        glVertex2d(x + r*cos(angle),
+                   y + r*sin(angle));
+    }
+    glEnd();
+}
+
 void render() {
     //for (auto& i : *world) {
     //    std::cout << i << std::endl;
@@ -100,16 +113,22 @@ void render() {
     //std::cout << std::endl;
     
     glClear(GL_COLOR_BUFFER_BIT);
-    glBegin(GL_POINTS);
     for (auto& i : *world) {
-        glColor3fv(i.color);
         auto pos = i.position;
         if (focused) {
             pos -= (*world)[focus_idx].position;
         }
-        glVertex3d(pos.x * view_factor + view_x, pos.y * view_factor + view_y, pos.z * view_factor);
+        pos.x = pos.x*view_factor + view_x;
+        pos.y = pos.y*view_factor + view_y;
+        pos.z *= view_factor;
+
+        glBegin(GL_POINTS);
+        glColor3fv(i.color);
+        glVertex3d(pos.x, pos.y, pos.z);
+        glEnd();
+
+        draw_circle(pos.x, pos.y, i.radius*view_factor, i.color);
     }
-    glEnd();
 /*
     glColor3f(1, 1, 1);
     glBegin(GL_LINES);
@@ -216,7 +235,7 @@ int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
     glutInitWindowPosition(100, 100);
-    glutInitWindowSize(1280, 720);
+    glutInitWindowSize(800, 800);
     glutCreateWindow("");
     glutDisplayFunc(render);
     glutSpecialFunc(on_specialkey);
