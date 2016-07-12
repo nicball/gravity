@@ -1,7 +1,6 @@
 #include "world.h"
 
-void interact(world& w, double E) {
-    static constexpr double K = 0.5;
+void interact(world& w, double E, double K) {
     for (auto& i : w) {
         for (auto& j : w) {
             if (&i != &j) {

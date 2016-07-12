@@ -71,8 +71,7 @@ void init_water_simulation() {
 
 void init_solar_system_simulation() {
     static particle data[] = {
-        { "sun", { 0.0, -5E5, 0.0 }, { 0.0, 0.0, 0.0 }, 1.989E30, 6.96342E8, { 1.0f, 1.0f, 0.0f }, {} },
-        //{ "sun", { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, 1.989E30, 6.96342E8, { 1.0f, 1.0f, 0.0f }, {} },
+        { "sun", { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, 1.989E30, 6.96342E8, { 1.0f, 1.0f, 0.0f }, {} },
         { "mecury", { 0.0, 4.60012E10, 0.0 }, { 4.787E4, 0.0, 0.0 }, 3.3022E23, 2.4397E6, { 0.8f, 0.8f, 0.8f }, {} },
         { "venus", { 0.0, 1.07477E11, 0.0 }, { 3.502E4, 0.0, 0.0 }, 4.8676E24, 6.0518E6, { 0.8f, 1.0f, 0.0f }, {} },
         { "earth", { 0.0, 1.47098074E11, 0.0 }, { 2.979E4, 0.0, 0.0 }, 5.9742E24, 6.371E6, { 0.0f, 1.0f, 1.0f }, {} },
@@ -91,7 +90,7 @@ void init_solar_system_simulation() {
     for (size_t i = 0; i != world->size(); ++i) {
         (*world)[i] = data[i];
     }
-    world->add_npc([](auto&& x) { interact(x, G); });
+    world->add_npc([](auto&& x) { interact(x, G, G); });
 }
 
 void draw_circle(double x, double y, double r, float color[3]) {

@@ -77,7 +77,7 @@ private:
     std::vector<action> npc;
 };
 
-void interact(class world&, double E = 0.001);
+void interact(class world&, double E = 0.001, double K = 0.2);
 
 inline void gravity(class world& w) {
     constexpr vector3d G = {0, -10, 0};
